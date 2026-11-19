@@ -6,7 +6,7 @@
 //
 // It runs on plain Node with nothing but the standard library: no network,
 // no extra packages, and nothing outside the repository is read.
-import { copyFileSync, mkdirSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 
 // The grader tells the program where the repository and the output folder
@@ -22,6 +22,13 @@ const destination = join(outDir, "POST.json");
 // fresh directory that does not exist yet, and the copy would fail without
 // it. Creating it recursively is a no-op when it already exists.
 mkdirSync(outDir, { recursive: true });
+
+// Fail loudly if the post file is missing instead of letting the copy
+// throw a bare ENOENT: the grader's error should name the file it wanted.
+if (!existsSync(source)) {
+  console.error(`Missing source file: ${source}`);
+  process.exit(1);
+}
 
 // Copy the post file byte for byte, so what the grader reads is exactly
 // what the repository holds. Nothing is printed on success.
